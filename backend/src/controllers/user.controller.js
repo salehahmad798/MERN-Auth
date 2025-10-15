@@ -37,8 +37,8 @@ export const registerUser = TryCatch(async (req, res) => {
   //     password
   //    });
 
-  console.log("Register request:", name, email);
+  console.log("Register request:", name, email , password);
   res
     .status(201)
-    .json({ message: "User registered successfully", User: { name, email } });
+    .json({ message: "User registered successfully", User: { name, email , password } });
 });
