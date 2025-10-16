@@ -17,6 +17,7 @@
     "express": "^5.1.0",
     "mongo-sanitize": "^1.1.0",
     "mongoose": "^8.19.1",
+    "nodemailer": "^7.0.9",
     "zod": "^4.1.12"
   },
   "devDependencies": {
