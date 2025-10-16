@@ -1,0 +1,21 @@
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+
+# Log files
+npm-debug.log*
+logs/
+
+# Build artifacts
+build/
+dist/
+
+# Editor-specific files
+.vscode/
+.idea/
+
+# Temporary files
+tmp/
+temp/
