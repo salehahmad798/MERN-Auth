@@ -4,8 +4,24 @@ import dotenv from "dotenv";
 
 import connectDB from "./src/config/db.js";
 
+import { createClient } from "redis";
+
 dotenv.config();
 
+const redisUrl = process.env.REDIS_URL;
+
+if (!redisUrl) {
+  console.log("Missing redis Url ");
+  process.exit(1);
+}
+export const redisClient = createClient({
+  url: redisUrl,
+});
+
+redisClient
+  .connect()
+  .then(console.log("Connect Redis successfully"))
+  .catch(console.error);
 
 await connectDB();
 
@@ -19,7 +35,7 @@ import userRoutes from "./src/routes/user.route.js";
 
 // using user route
 
-app.use("/api/v1/",userRoutes);
+app.use("/api/v1/", userRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
