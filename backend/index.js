@@ -4,7 +4,8 @@ import dotenv from "dotenv";
 
 import connectDB from "./src/config/db.js";
 
-import { createClient } from "redis";
+import { createClient } from "redis"; //connected redis for the rate limit of user only in one min. to sent one verification code with the help of upstash
+
 
 dotenv.config();
 
