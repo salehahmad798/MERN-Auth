@@ -3,21 +3,22 @@ import sanitize from "mongo-sanitize";
 import { User } from "../models/user.model.js";
 import { registerSchema } from "../utils/zod.js";
 import { redisClient } from "../../index.js";
-import bcrypt from 'bcrypt';
+import bcrypt from "bcrypt";
 
-import crypto from 'crypto';
+import crypto from "crypto";
 import sendMail from "../config/sendMail.js";
 import { getVerifyEmailHtml } from "../config/html.js";
+import { _discriminatedUnion } from "zod/v4/core";
 
 export const registerUser = TryCatch(async (req, res) => {
   console.log("Register Controller called!");
-  
+
   //    const {name , email , password}  = sanitize(req.body);  /// to aviod the $ from hacker
 
   const cleandata = sanitize(req.body);
   const validation = registerSchema.safeParse(cleandata);
   console.log(validation);
-  
+
   if (!validation.success) {
     const zodError = validation.error;
     let firstErrorMessage = "validation Failed";
@@ -47,32 +48,32 @@ export const registerUser = TryCatch(async (req, res) => {
     });
   }
 
-const existingUser = await User.findOne({email});
-if (existingUser) {
-  return res.status(400).json({
-    message : "User already exists",
-  })
-}
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return res.status(400).json({
+      message: "User already exists",
+    });
+  }
 
-const hasdPassword = await bcrypt.hash(password , 10);
+  const hasdPassword = await bcrypt.hash(password, 10);
 
-const verifyToken = crypto.randomBytes(32).toString('hex');
+  const verifyToken = crypto.randomBytes(32).toString("hex");
 
-const verifyKey = `verify:${verifyToken}`;
-const datatoStore = JSON.stringify({
-  name,
-  email,
-  password:hasdPassword,
-});
+  const verifyKey = `verify:${verifyToken}`;
+  const datatoStore = JSON.stringify({
+    name,
+    email,
+    password: hasdPassword,
+  });
 
-await redisClient.set(verifyKey , datatoStore ,{EX : 300}) // 300 second means to 5 mint.
+  await redisClient.set(verifyKey, datatoStore, { EX: 300 }); // 300 second means to 5 mint.
 
-const subject = 'verify your email account for creation ';
-const html = getVerifyEmailHtml({email , token:verifyToken});
+  const subject = "verify your email account for creation ";
+  const html = getVerifyEmailHtml({ email, token: verifyToken });
 
-await sendMail({email , subject , html});
+  await sendMail({ email, subject, html });
 
-await redisClient.set(rateLimitKey ,"true", {EX : 60} ) // 60 second means one mint.
+  await redisClient.set(rateLimitKey, "true", { EX: 60 }); // 60 second means one mint.
 
   //    res.json({
   //     name,
@@ -80,11 +81,50 @@ await redisClient.set(rateLimitKey ,"true", {EX : 60} ) // 60 second means one m
   //     password
   //    });
 
-  console.log("Register request:", name , email , password);
-  res
-    .status(201)
-    .json({
-      message: "If your email is valid , a verification link has been sent . It will be expire in 5 minutes",
-      
+  // console.log("Register request:", name, email, password);
+  res.json({
+    message:
+      "If your email is valid , a verification link has been sent . It will be expire in 5 minutes",
+  });
+});
+
+export const verifyUser = TryCatch(async (req, res) => {
+  const { token } = req.params;
+
+  if (!token) {
+    return res.status(400).json({
+      message: "verification token is required",
     });
+  }
+  const verifyKey = `verify:${token}`;
+
+  const userDataJson = await redisClient.get(verifyKey);
+
+  if (!userDataJson) {
+    return res.status(400).json({
+      message: "verification link is expired.",
+    });
+  }
+
+  await redisClient.del(verifyKey);
+
+  const userData = JSON.parse(userDataJson);
+
+  const existingUser = await User.findOne({ email: userData.email });
+  if (existingUser) {
+    return res.status(400).json({
+      message: "User already exists",
+    });
+  }
+
+  const newUser = await User.create({
+    name: userData.name,
+    email: userData.email,
+    password: userData.password,
+  });
+
+  res.status(201).json({
+    message: "Email verified successfully! your account has been created",
+    user: { _id: newUser._id, name: newUser.name, password: newUser.password },
+  });
 });
