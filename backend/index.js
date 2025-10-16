@@ -20,10 +20,13 @@ export const redisClient = createClient({
   url: redisUrl,
 });
 
+
 redisClient
   .connect()
-  .then(console.log("Connect Redis successfully"))
-  .catch(console.error);
+  .then(() => console.log("Connected to Redis successfully"))
+  .catch((err) => {
+    console.error("Redis connection error:", err);
+  });
 
 await connectDB();
 
@@ -36,7 +39,7 @@ app.use(express.json());
 
 // using user route
 
-app.use("/api/v1/", userRoutes);
+app.use("/api/v1", userRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

@@ -10,11 +10,14 @@ import sendMail from "../config/sendMail.js";
 import { getVerifyEmailHtml } from "../config/html.js";
 
 export const registerUser = TryCatch(async (req, res) => {
+  console.log("Register Controller called!");
+  
   //    const {name , email , password}  = sanitize(req.body);  /// to aviod the $ from hacker
 
   const cleandata = sanitize(req.body);
   const validation = registerSchema.safeParse(cleandata);
-
+  console.log(validation);
+  
   if (!validation.success) {
     const zodError = validation.error;
     let firstErrorMessage = "validation Failed";
@@ -77,7 +80,7 @@ await redisClient.set(rateLimitKey ,"true", {EX : 60} ) // 60 second means one m
   //     password
   //    });
 
-  console.log("Register request:", name, email, password);
+  console.log("Register request:", name , email , password);
   res
     .status(201)
     .json({
