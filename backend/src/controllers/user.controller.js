@@ -221,7 +221,7 @@ export const verifyOtp = TryCatch(async (req, res) => {
   const storeOtp = JSON.parse(storeOtpString);
 
   if (storeOtp !== otp) {
-    return res.status(400).json({ 
+    return res.status(400).json({
       message: "Invailid Otp",
     });
   }
@@ -230,12 +230,16 @@ export const verifyOtp = TryCatch(async (req, res) => {
 
   const user = await User.findOne({ email });
 
-const tokenData = await generateToken(user._id , res);
+  const tokenData = await generateToken(user._id, res);
 
-res.status(200).json({
-  message : `Welcome ${user.name}`,
-  user,
-})
-
-
+  res.status(200).json({
+    message: `Welcome ${user.name}`,
+    user,
+  });
 });
+
+
+export const myProfile = TryCatch(async (req , res)=>{
+  const user = req.user;
+  res.json(user);
+})
