@@ -9,7 +9,7 @@ import crypto from "crypto";
 import sendMail from "../config/sendMail.js";
 import { getOtpHtml, getVerifyEmailHtml } from "../config/html.js";
 import { _discriminatedUnion } from "zod/v4/core";
-import { generateToken } from "../config/generateToken.js";
+import { generateToken, verifyRefreshToken } from "../config/generateToken.js";
 
 export const registerUser = TryCatch(async (req, res) => {
   console.log("Register Controller called!");
@@ -238,8 +238,30 @@ export const verifyOtp = TryCatch(async (req, res) => {
   });
 });
 
-
-export const myProfile = TryCatch(async (req , res)=>{
+export const myProfile = TryCatch(async (req, res) => {
   const user = req.user;
   res.json(user);
-})
+});
+
+export const refreshToken = TryCatch(async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) {
+    return res.status(401).json({
+      message: "Invailid refresh Token ",
+    });
+  }
+
+  const dedcode = await verifyRefreshToken(refreshToken);
+  if (!dedcode) {
+    return res.status(401).json({
+      message: "Invailid refresh Token ",
+    });
+  }
+
+  generateToken(dedcode.id, res);
+
+ return res.status(200).json({
+    message: "Token Refreshed",
+    token
+  });
+});

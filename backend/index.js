@@ -7,6 +7,7 @@ import connectDB from "./src/config/db.js";
 import { createClient } from "redis"; //connected redis for the rate limit of user only in one min. to sent one verification code with the help of upstash
 // importing routes
 import userRoutes from "./src/routes/user.route.js";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ const app = express();
 
 // import middlewares
 app.use(express.json());
+app.use(cookieParser());
 
 
 

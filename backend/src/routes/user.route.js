@@ -1,5 +1,5 @@
 import express from "express";
-import { loginUser, myProfile, registerUser, verifyOtp, verifyUser } from "../controllers/user.controller.js";
+import { loginUser, myProfile, refreshToken, registerUser, verifyOtp, verifyUser } from "../controllers/user.controller.js";
 import { isAuth } from "../middlewares/isAuth.js";
 // import { validate } from "../middlewares/validate.js";
 // import { registerSchema } from "../utils/zod.js";
@@ -14,7 +14,8 @@ router.post("/login" , loginUser);
 
 router.post("/verify" ,verifyOtp)
 
-router.get("me" , isAuth , myProfile)
+router.get("/me" , isAuth , myProfile)
+router.post("/refresh", refreshToken)
 
 
 // router.post("/register", validate(registerSchema), registerUser);
