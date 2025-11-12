@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
 import { redisClient } from "../../index.js";
 
-export const generateToken = async (id) => {
+// Generate both tokens and set them in cookies
+export const generateToken = async (id, res) => {
   const accessToken = jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: "1m",
   });
@@ -10,9 +11,24 @@ export const generateToken = async (id) => {
     expiresIn: "7d",
   });
 
-  // store refresh token in redis
-  const refreshTokenKey = `refresh_token:${id}`;
-  await redisClient.setEx(refreshTokenKey, 7 * 24 * 60 * 60, refreshToken);
+  // Store refresh token in Redis for 7 days
+  const refreshKey = `refresh_token:${id}`;
+  await redisClient.setEx(refreshKey, 7 * 24 * 60 * 60, refreshToken);
+
+  // Set cookies
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    sameSite: "strict",
+    // secure: process.env.NODE_ENV === "production",
+    maxAge: 60 * 1000, // 1 minute
+  });
+
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    sameSite: "strict",
+    // secure: process.env.NODE_ENV === "production",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  });
 
   return { accessToken, refreshToken };
 };
@@ -20,25 +36,29 @@ export const generateToken = async (id) => {
 export const verifyRefreshToken = async (refreshToken) => {
   try {
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_SECRET);
-
-    const storedToken = await redisClient.get(`refresh_token:${decoded.id}`);
-
-    if (storedToken === refreshToken) {
-      return decoded;
-    }
+    const stored = await redisClient.get(`refresh_token:${decoded.id}`);
+    if (stored === refreshToken) return decoded;
     return null;
   } catch {
     return null;
   }
 };
 
-export const generateAccessTokenOnly = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
+export const generateAccessToken = (id, res) => {
+  const newAccessToken = jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: "1m",
   });
+
+  res.cookie("accessToken", newAccessToken, {
+    httpOnly: true,
+    sameSite: "strict",
+    // secure: process.env.NODE_ENV === "production",
+    maxAge: 60 * 1000,
+  });
+
+  return newAccessToken;
 };
 
-// delete the refresh_token from redis
-export const revokeRefreshToken = async (UserId) => {
-  await redisClient.del(`refresh_token:${UserId}`);
+export const revokeRefreshToken = async (userId) => {
+  await redisClient.del(`refresh_token:${userId}`);
 };
