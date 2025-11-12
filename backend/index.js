@@ -9,6 +9,8 @@ import { createClient } from "redis"; //connected redis for the rate limit of us
 import userRoutes from "./src/routes/user.route.js";
 import cookieParser from "cookie-parser";
 
+import cors from "cors";
+
 dotenv.config();
 
 const redisUrl = process.env.REDIS_URL;
@@ -20,7 +22,6 @@ if (!redisUrl) {
 export const redisClient = createClient({
   url: redisUrl,
 });
-
 
 redisClient
   .connect()
@@ -36,8 +37,13 @@ const app = express();
 // import middlewares
 app.use(express.json());
 app.use(cookieParser());
-
-
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    Credential: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  })
+);
 
 // using user route
 
