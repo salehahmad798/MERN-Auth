@@ -18,15 +18,18 @@ export const generateToken = async (id, res) => {
   // Set cookies
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    sameSite: "strict",
+    sameSite: "none",
+    secure: true,
 
     // secure: process.env.NODE_ENV === "production",
-    maxAge: 60 * 1000, // 1 minute
+    maxAge: 1 * 60 * 1000, // 1 minute
   });
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    sameSite: "strict",
+    sameSite: "none",
+    secure: true,
+
     // secure: process.env.NODE_ENV === "production",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
@@ -52,7 +55,8 @@ export const generateAccessToken = (id, res) => {
 
   res.cookie("accessToken", newAccessToken, {
     httpOnly: true,
-    sameSite: "strict",
+    sameSite: "none",
+    secure: true,
     maxAge: 60 * 1000,
   });
 
