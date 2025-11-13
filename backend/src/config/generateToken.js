@@ -19,6 +19,7 @@ export const generateToken = async (id, res) => {
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
     sameSite: "strict",
+
     // secure: process.env.NODE_ENV === "production",
     maxAge: 60 * 1000, // 1 minute
   });
@@ -52,7 +53,6 @@ export const generateAccessToken = (id, res) => {
   res.cookie("accessToken", newAccessToken, {
     httpOnly: true,
     sameSite: "strict",
-    // secure: process.env.NODE_ENV === "production",
     maxAge: 60 * 1000,
   });
 
