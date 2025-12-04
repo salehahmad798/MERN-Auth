@@ -30,7 +30,22 @@ redisClient
     console.error("Redis connection error:", err);
   });
 
-await connectDB();
+// await connectDB();
+const startServer = async () => {
+  try {
+    await connectDB();
+    
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+// Call the async function
+startServer();
 
 const app = express();
 
